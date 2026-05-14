@@ -1,0 +1,253 @@
+# ISO mount one-liner
+for iso in $(find / -name "*.iso" 2>/dev/null); do echo "Found: $iso"; sudo mkdir -p /mnt/iso && sudo mount -o loop "$iso" /mnt/iso && echo "Mounted: $iso" && break; done
+
+# --- CREATING ARCHIVES ---
+tar -cvf archive.tar /path/to/folder       
+tar -czvf archive.tar.gz /path/to/folder    
+tar -cjvf archive.tar.bz2 /path/to/folder  
+tar -cJvf archive.tar.xz /path/to/folder   
+
+# Extract
+tar -xvf archive.tar                        
+tar -xzvf archive.tar.gz                  
+tar -xjvf archive.tar.bz2                 
+tar -xJvf archive.tar.xz                   
+tar -xvf archive.tar -C /target/directory  
+
+# Inspect without extract
+tar -tvf archive.tar                        
+tar -tzvf archive.tar.gz                   
+
+# Excluding Files
+tar -czvf archive.tar.gz folder/ --exclude='*.log'   
+tar -czvf archive.tar.gz folder/ --exclude-vcs        
+
+# Compress
+xz file.txt                    
+xz -k file.txt                 
+xz -9 file.txt                 
+xz -1 file.txt                 
+xz -z file.txt                 
+
+# Decompress
+xz -d file.txt.xz              
+xz -dk file.txt.xz             
+unxz file.txt.xz               
+
+# Inspect
+xz -l file.txt.xz              
+xz -tv file.txt.xz             
+
+# Multiple files
+xz -k *.log                    
+
+# Compress
+7z a archive.7z file.txt               
+7z a archive.7z /path/to/folder/       
+7z a archive.zip file.txt              
+7z a -mx=9 archive.7z folder/         
+
+# Extract
+7z x archive.7z                        
+7z e archive.7z                        
+7z x archive.7z -o/target/directory   
+
+# Inspect
+7z l archive.7z                        
+7z t archive.7z                        
+
+# Encrypt
+7z a -p archive.7z folder/             
+7z a -pMYPASSWORD archive.7z folder/  
+7z a -pMYPASSWORD -mhe=on archive.7z folder/  
+
+# Extract when encrypted with password
+7z x -pMYPASSWORD archive.7z
+
+# Compress
+bzip2 file.txt                  
+bzip2 -k file.txt               
+bzip2 -9 file.txt               
+bzip2 -1 file.txt               
+
+# Decompress
+bzip2 -d file.txt.bz2           
+bunzip2 file.txt.bz2            
+bzip2 -dk file.txt.bz2          
+
+# Testing
+bzip2 -t file.txt.bz2           
+bzip2 -v file.txt               
+
+# Extract with tar
+tar -cjvf archive.tar.bz2 folder/    
+tar -xjvf archive.tar.bz2            
+
+# Compress gzip
+gzip file.txt                   
+gzip -k file.txt                
+gzip -9 file.txt                
+gzip -1 file.txt                
+gzip -r folder/  #recursive               
+
+# Decompress with gunzip
+gunzip file.txt.gz              
+gunzip -k file.txt.gz           
+gzip -d file.txt.gz             
+
+# Inspect without extracting
+zcat file.txt.gz                
+zless file.txt.gz               
+zgrep "error" file.txt.gz       
+
+# Extract with tar
+tar -czvf archive.tar.gz folder/      
+tar -xzvf archive.tar.gz              
+
+# Basic syntax
+find <where> <what>
+
+# Find by name
+find / -name "file.txt"       
+find . -name "file.txt"        
+find /home -name "file.txt"     
+
+# Case-insensitive name search
+find / -iname "File.TXT"
+
+# Find by file type
+find /home -type f               
+find /home -type d                
+find /home -type l                 
+
+# Find by extension
+find / -name "*.log"
+find / -name "*.conf"
+find /var -name "*.gz"
+
+# Find by size
+find / -size +100M                  
+find / -size -10k                    
+find / -size +1G                     
+
+# Find by modification time
+find /var/log -mtime -7              
+find /var/log -mtime +30             
+find /var/log -mmin -60              
+
+# Find by permissions
+find / -perm 777                     
+find / -perm -4000                   
+find / -perm -2000                   
+
+# Find by owner
+find /home -user john
+find /var  -group www-data
+
+# Find and execute a command on results
+find /var/log -name "*.log" -exec ls -lh {} \;
+find /tmp -name "*.tmp" -exec rm {} \;          
+find / -name "*.conf" -exec grep -l "password" {} \;  
+
+# Exclude a directory from search
+find / -name "*.log" -not -path "/proc/*"
+find / -name "*.log" ! -path "/sys/*"
+
+# Find empty files or directories
+find /tmp -empty
+
+# Combine conditions
+find /home -type f -name "*.txt" -size +1M      
+find /var -type f -mtime +7 -name "*.log"       
+
+# Basic syntax
+dd if=<input file> of=<output file> bs=<block size>
+
+# Clone an entire disk to another disk
+sudo dd if=/dev/sda of=/dev/sdb bs=4M status=progress
+
+# Create an ISO image of a CD/DVD
+sudo dd if=/dev/cdrom of=disc.iso bs=2048
+
+# Write an ISO to a USB drive (bootable USB)
+sudo dd if=ubuntu.iso of=/dev/sdb bs=4M status=progress
+sudo sync                     
+
+# Back up a partition to a file
+sudo dd if=/dev/sda1 of=/backup/partition.img bs=4M status=progress
+
+# Restore a partition from a backup
+sudo dd if=/backup/partition.img of=/dev/sda1 bs=4M status=progress
+
+# Wipe a disk securely with zeros
+sudo dd if=/dev/zero of=/dev/sdb bs=4M status=progress
+
+# Wipe a disk with random data 
+sudo dd if=/dev/urandom of=/dev/sdb bs=4M status=progress
+
+# Test disk write speed
+dd if=/dev/zero of=/tmp/testfile bs=1G count=1 oflag=dsync
+
+# Test disk read speed
+dd if=/tmp/testfile of=/dev/null bs=1G
+
+# Create a file of a specific size 
+dd if=/dev/zero of=testfile.img bs=1M count=100    
+
+# Basic search
+grep "searchterm" file.txt
+
+# Case-insensitive
+grep -i "searchterm" file.txt
+
+# Show line numbers
+grep -n "searchterm" file.txt
+
+# Invert match — show lines that DON'T match
+grep -v "searchterm" file.txt
+
+# Search recursively through a directory
+grep -r "searchterm" /var/log/
+grep -r "password" /etc/
+
+# Recursive & case-insensitive
+grep -ri "error" /var/log/
+
+# Show only filenames that contain the match
+grep -l "searchterm" /var/log/*.log
+
+# Show filenames that DON'T contain the match
+grep -L "searchterm" /var/log/*.log
+
+# Count number of matching lines
+grep -c "error" /var/log/syslog
+
+# Show context around matches
+grep -A 3 "error" file.log   
+grep -B 3 "error" file.log    
+grep -C 3 "error" file.log     
+
+# Extended regex 
+grep -E "error|warning|critical" /var/log/syslog
+grep -E "failed.+password" /var/log/auth.log
+
+# Fixed string treat pattern as literal
+grep -F "192.168.1.1" access.log
+
+# Match whole words only
+grep -w "root" /etc/passwd
+
+# Match whole line only
+grep -x "exactly this line" file.txt
+
+# Pipe grep into another grep 
+cat /var/log/auth.log | grep "Failed" | grep "root"
+
+# Common real-world uses
+grep "error" /var/log/syslog | tail -20       
+grep -r "TODO" /home/user/project/             
+ps aux | grep nginx                             
+cat /etc/passwd | grep -v "nologin"              
+grep "404" /var/log/nginx/access.log | wc -l      
+
+
