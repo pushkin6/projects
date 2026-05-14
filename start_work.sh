@@ -1,6 +1,6 @@
 #!/bin/bash
 #===============================
-#Usage: ./setup_session.sh [session-name]
+#Usage: sudo ./setup_session.sh [session-name]
 #===============================
 
 SESSION_NAME="${1:-ops}"
@@ -15,7 +15,7 @@ fi
 # Create session and first window - MAIN
 tmux new-session -d -s "$SESSION_NAME" -n "MAIN"
 
-# Set iptables rule to allow ssh, http, https, and icmp. Drop all other traffic
+# Set iptables rule to allow ssh, http, https, and icmp. Drop all other traffic. Save on boot
 tmux send-keys -t "$SESSION_NAME:MAIN" "iptables -F" Enter
 tmux send-keys -t "$SESSION_NAME:MAIN" "iptables -P INPUT DROP" Enter
 tmux send-keys -t "$SESSION_NAME:MAIN" "iptables -P FORWARD DROP" Enter
@@ -36,8 +36,13 @@ tmux send-keys -t "$SESSION_NAME:MAIN" "iptables -A INPUT -p icmp -j ACCEPT" Ent
 tmux send-keys -t "$SESSION_NAME:MAIN" "iptables -A OUTPUT -p icmp -j ACCEPT" Enter
 tmux send-keys -t "$SESSION_NAME:MAIN" "iptables -A INPUT -j LOG --log-prefix 'IPT-DROP-IN: ' --log-level 4" Enter
 tmux send-keys -t "$SESSION_NAME:MAIN" "iptables -A OUTPUT -j LOG --log-prefix 'IPT-DROP-OUT: ' --log-level 4" Enter
+tmux send-keys -t "$SESSION_NAME:MAIN" "iptables-save > /etc/iptables/rules.v4" Enter
 tmux send-keys -t "$SESSION_NAME:MAIN" "iptables -L -vn" Enter
-tmux send-keys -t "$SESSION_NAME:MAIN" "su kali; firefox &" Enter
+
+# Enable forwarding and switch to user and open firefox
+tmux send-keys -t "$SESSION_NAME:MAIN" "echo 'net.ipv4.ip_forward = 1' | tee -a /etc/sysctl.conf; sysctl -p" Enter
+tmux send-keys -t "$SESSION_NAME:MAIN" "su kali" Enter
+tmux send-keys -t "$SESSION_NAME:MAIN" "firefox &" Enter
 
 # Create tunneling windows - 4 panes, one per quadrant
 tmux new-window -t "$SESSION_NAME:1" -n "TUNNELING"
