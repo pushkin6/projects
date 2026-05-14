@@ -1,0 +1,43 @@
+sudo apt update && sudo apt install wireguard -y
+
+# Set up on Kali
+wg genkey | sudo tee /etc/wireguard/server_private.key | wg pubkey | sudo tee /etc/wireguard/server_public.key
+
+# Set up on Ubuntu
+wg genkey | sudo tee /etc/wireguard/client_private.key | wg pubkey | sudo tee /etc/wireguard/client_public.key
+
+#server config
+[Interface]
+Address = 10.9.0.1/24
+ListenPort = 51820
+PrivateKey = <KALI_PRIVATE_KEY>
+PostUp = iptables -A FORWARD -i wg0 -j ACCEPT; iptables -A FORWARD -o wg0 -j ACCEPT; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+PostDown = iptables -D FORWARD -i wg0 -j ACCEPT; iptables -D FORWARD -o wg0 -j ACCEPT; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE
+
+[Peer]
+PublicKey = <UBUNTU_PUBLIC_KEY>
+# Do NOT add 10.10.20.0/24 here — causes routing loop
+AllowedIPs = 10.9.0.2/32
+
+#client config
+[Interface]
+Address = 10.9.0.2/24
+PrivateKey = <UBUNTU_PRIVATE_KEY>
+DNS = 8.8.8.8
+PostUp = ip route add 192.168.10.10 via 10.10.20.1 dev ens40
+PostDown = ip route del 192.168.10.10 via 10.10.20.1 dev ens40
+
+[Peer]
+PublicKey = <KALI_PUBLIC_KEY>
+Endpoint = 192.168.10.10:51820
+# Do NOT add 192.168.10.0/24 here — causes routing loop
+AllowedIPs = 10.9.0.0/24, 10.10.30.0/24
+PersistentKeepalive = 25
+
+#Enable forwarding and starting the vpn
+echo "net.ipv4.ip_forward=1" | sudo tee -a /etc/sysctl.conf
+sudo sysctl -p
+
+sudo wg-quick up wg0
+sudo wg-quick down wg0
+sudo systemctl enable wg-quick@wg0

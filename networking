@@ -1,0 +1,59 @@
+#DHCP IP on Ubuntu
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    eth0:
+      dhcp4: yes
+      dhcp6: no
+
+#Static IP on Ubuntu
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    eth0:
+      dhcp4: no        # use this for static
+      dhcp6: no
+      addresses:
+        - 10.10.20.10/24
+      routes:
+        - to: default
+          via: 10.10.20.1
+      nameservers:
+        addresses: [8.8.8.8, 8.8.4.4]
+
+sudo netplan generate
+sudo netplan apply
+sudo chmod 600 /etc/netplan/*.yaml
+
+#DHCP ip on kali
+/etc/network/interfaces
+# Loopback
+auto lo
+iface lo inet loopback
+
+# Primary interface — static
+auto eth0
+iface eth0 inet static
+    address 192.168.10.10
+    netmask 255.255.255.0
+    gateway 192.168.10.1
+    dns-nameservers 8.8.8.8 8.8.4.4
+    post-up ip route add 10.10.20.0/24 via 192.168.10.1
+    post-up ip route add 10.10.30.0/24 via 192.168.10.1
+    post-up ip route add 10.10.40.0/24 via 192.168.10.1
+
+# Primary interface — DHCP
+auto eth0
+iface eth0 inet dhcp
+
+# How to set static routes
+sudo ip route add 10.10.30.0/24 via 192.168.10.1 dev eth0
+sudo ip route add default via 192.168.10.1 dev eth0
+
+# How to flush routes
+sudo ip route flush table main
+
+# iptables persistence
+sud
